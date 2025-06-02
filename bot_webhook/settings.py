@@ -25,10 +25,11 @@ SECRET_KEY = 'django-insecure-8obb6fuc53a39pn9y9ao@chr-8(d47l&l14n^@*=4kfqwh$7_n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '8c77-103-69-233-226.ngrok-free.app']
-
+#ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '8c77-103-69-233-226.ngrok-free.app']
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 # settings.py
-TELEGRAM_BOT_TOKEN = "5898177748:AAEhexqRxP60662CPHi4DnpEYgYZuI91cmM"
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_WEBHOOK_URL = os.environ.get("TELEGRAM_WEBHOOK_URL")
 
 
 
