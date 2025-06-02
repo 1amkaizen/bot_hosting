@@ -2,9 +2,7 @@
 from .telegram_api import send_message
 from .state import user_state
 from django.conf import settings
-import requests
-from data_hosting import HOSTING_OPTIONS  # 🔥 ambil dari file terpisah
-
+from data_hosting import HOSTING_OPTIONS
 
 def handle_message(data):
     if "message" not in data:
@@ -17,58 +15,84 @@ def handle_message(data):
 
     if text == "/start":
         start_text = (
-            "Halo! Selamat datang di layanan hosting kami.\n"
-            "Pilihan paket hosting terbaik mulai 5 ribu\n\n"
+            "👋 *Selamat datang di Bot Hosting Zen!*\n\n"
+            "🚀 Kami siap membantumu memilih paket hosting terbaik untuk website, aplikasi, atau proyek digitalmu.\n\n"
+            "📦 Mulai dengan perintah /paket untuk melihat pilihan.\n"
+            "🆘 Perlu bantuan? Ketik /help ya!"
         )
         send_message(chat_id, start_text, parse_mode="Markdown")
 
     elif text == "/help":
         help_text = (
-            "🤖 *Panduan Bot Hosting*\n\n"
-            "/start - Memulai pemilihan paket hosting\n"
-            "/paket - Memilih paket hosting\n"
-            "/help - Menampilkan pesan bantuan ini\n\n"
+            "📚 *Panduan Penggunaan Bot Hosting*\n\n"
+            "🔹 /start – Memulai ulang bot\n"
+            "🔹 /paket – Lihat pilihan hosting\n"
+            "🔹 /help – Bantuan penggunaan bot\n\n"
+            "📬 _Hubungi admin jika butuh panduan lebih lanjut._"
         )
         send_message(chat_id, help_text, parse_mode="Markdown")
 
     elif text == "/paket":
         user_state[user_id] = {"step": "jenis"}
         keyboard = {
-            "keyboard": [["Web Hosting", "VPS Hosting", "Cloud Hosting"]],
+            "keyboard": [
+                ["🌐 Web Hosting", "📦 VPS Hosting"],
+                ["☁️ Cloud Hosting"]
+            ],
+            "resize_keyboard": True,
             "one_time_keyboard": True,
-            "resize_keyboard": True
+            "input_field_placeholder": "Pilih jenis hosting..."
         }
-        send_message(chat_id, "Silakan pilih jenis hosting:", reply_markup=keyboard)
+        send_message(chat_id, "🛠️ *Langkah 1:* Pilih jenis hosting yang kamu butuhkan:", parse_mode="Markdown", reply_markup=keyboard)
 
     elif state.get("step") == "jenis":
-        if text in HOSTING_OPTIONS:
-            user_state[user_id] = {"step": "durasi", "jenis": text}
-            durations = list(HOSTING_OPTIONS[text].keys())
+        # Hapus emoji sebelum dicocokkan
+        clean_text = text.replace("🌐", "").replace("📦", "").replace("☁️", "").strip()
+        if clean_text in HOSTING_OPTIONS:
+            user_state[user_id] = {"step": "durasi", "jenis": clean_text}
+            durations = list(HOSTING_OPTIONS[clean_text].keys())
             keyboard = {
-                "keyboard": [[d] for d in durations],
+                "keyboard": [[f"⏳ {d}"] for d in durations],
+                "resize_keyboard": True,
                 "one_time_keyboard": True,
-                "resize_keyboard": True
+                "input_field_placeholder": "Pilih durasi paket..."
             }
-            send_message(chat_id, "Pilih durasi paket:", reply_markup=keyboard)
+            send_message(
+                chat_id,
+                f"📅 *Langkah 2:* Pilih durasi paket untuk *{clean_text}* hosting:",
+                parse_mode="Markdown",
+                reply_markup=keyboard
+            )
         else:
-            send_message(chat_id, "Mohon pilih jenis hosting yang valid.")
+            send_message(chat_id, "❗ Jenis hosting tidak dikenali. Silakan pilih dari tombol yang tersedia.")
 
     elif state.get("step") == "durasi":
         jenis = state.get("jenis")
-        if jenis and text in HOSTING_OPTIONS[jenis]:
-            paket_list = HOSTING_OPTIONS[jenis][text]
+        clean_text = text.replace("⏳", "").strip()
+        if jenis and clean_text in HOSTING_OPTIONS[jenis]:
+            paket_list = HOSTING_OPTIONS[jenis][clean_text]
             for paket in paket_list:
-                fitur_text = "\n".join([f"• {f}" for f in paket["fitur"]])
+                fitur_text = "\n".join([f"🔹 {f}" for f in paket["fitur"]])
                 response = (
-                    f"📦 *{paket.get('nama', jenis)}* - {text}\n\n"
-                    f"💰 Harga: {paket['harga']}\n"
-                    f"🔧 Fitur:\n{fitur_text}\n"
-                    f"🔗 [Klik untuk beli]({paket['link']})"
+                    f"🎁 *{paket.get('nama', jenis)}* – {clean_text}\n\n"
+                    f"💰 *Harga:* `{paket['harga']}`\n"
+                    f"🛠️ *Fitur:*\n{fitur_text}"
                 )
-                send_message(chat_id, response, parse_mode="Markdown")
+                button_markup = {
+                    "inline_keyboard": [
+                        [
+                            {
+                                "text": "🛒 Beli Sekarang",
+                                "url": paket["link"]
+                            }
+                        ]
+                    ]
+                }
+                send_message(chat_id, response, parse_mode="Markdown", reply_markup=button_markup)
             user_state[user_id] = {"step": None}
         else:
-            send_message(chat_id, "Mohon pilih durasi paket yang valid.")
+            send_message(chat_id, "⚠️ Durasi tidak sesuai. Silakan pilih dari opsi yang tersedia.")
+
     else:
-        send_message(chat_id, "Ketik /start untuk memulai atau /help untuk bantuan.")
+        send_message(chat_id, "🤖 Perintah tidak dikenali.\nCoba /start untuk memulai atau /help untuk bantuan.")
 
