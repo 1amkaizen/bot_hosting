@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,12 +27,12 @@ SECRET_KEY = 'django-insecure-8obb6fuc53a39pn9y9ao@chr-8(d47l&l14n^@*=4kfqwh$7_n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '8c77-103-69-233-226.ngrok-free.app']
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
-# settings.py
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-TELEGRAM_WEBHOOK_URL = os.environ.get("TELEGRAM_WEBHOOK_URL")
 
+
+TELEGRAM_BOT_TOKEN = config("TELEGRAM_BOT_TOKEN")
+WEBHOOK_URL = config("WEBHOOK_URL")
+
+ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost").split(",")
 
 
 # Application definition

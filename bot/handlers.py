@@ -16,17 +16,11 @@ def handle_message(data):
     state = user_state.get(user_id, {})
 
     if text == "/start":
-        user_state[user_id] = {"step": "jenis"}
-        keyboard = {
-            "keyboard": [["Web Hosting", "VPS Hosting", "Cloud Hosting"]],
-            "one_time_keyboard": True,
-            "resize_keyboard": True
-        }
-        send_message(chat_id, (
+        start_text = (
             "Halo! Selamat datang di layanan hosting kami.\n"
-            "Ketik /help untuk info bantuan.\n\n"
-            "Pilih jenis hosting yang ingin kamu beli:"
-        ), reply_markup=keyboard)
+            "Pilihan paket hosting terbaik mulai 5 ribu\n\n"
+        )
+        send_message(chat_id, start_text, parse_mode="Markdown")
 
     elif text == "/help":
         help_text = (
